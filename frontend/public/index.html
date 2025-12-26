@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0a1929" />
+    <meta
+      name="description"
+      content="TOR Sentinel - Tamil Nadu Police Cyber Crime Division - Advanced TOR Network Analysis System"
+    />
+    <meta name="keywords" content="TOR, Cybersecurity, Forensics, Tamil Nadu Police, AI, Machine Learning" />
+    <meta name="author" content="Tamil Nadu Police Cyber Crime Division" />
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' ws: wss: http://localhost:5000;" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    
+    <title>TOR Sentinel - Tamil Nadu Police</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    
+    <style>
+      /* Reset and base styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background-color: #0a1929;
+        color: white;
+        overflow-x: hidden;
+      }
+      
+      #root {
+        min-height: 100vh;
+      }
+
+      /* Loading screen styles */
+      #loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #0a1929 0%, #132f4c 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        color: white;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        text-align: center;
+        transition: opacity 0.5s ease;
+      }
+      
+      .loading-spinner {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 4px solid #1976d2;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 30px;
+        box-shadow: 0 0 20px rgba(25, 118, 210, 0.3);
+      }
+      
+      .loading-glow {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, #1976d2 0%, transparent 70%);
+        border-radius: 50%;
+        opacity: 0.3;
+        animation: pulse 2s ease-in-out infinite;
+      }
+      
+      #loading-screen h1 {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        background: linear-gradient(45deg, #1976d2, #42a5f5);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: bold;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+      
+      #loading-screen .subtitle {
+        font-size: 1.2rem;
+        color: #b0bec5;
+        margin-bottom: 5px;
+      }
+      
+      #loading-screen .version {
+        font-size: 0.9rem;
+        color: #90a4ae;
+        margin-top: 20px;
+      }
+      
+      .loading-progress {
+        width: 300px;
+        margin-top: 30px;
+      }
+      
+      .progress-bar {
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #1976d2, #42a5f5);
+        width: 0%;
+        animation: loading 2s ease-in-out infinite;
+        border-radius: 2px;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.3; }
+        50% { transform: scale(1.1); opacity: 0.5; }
+      }
+      
+      @keyframes loading {
+        0% { width: 0%; }
+        50% { width: 70%; }
+        100% { width: 100%; }
+      }
+      
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: rgba(25, 118, 210, 0.5);
+        border-radius: 4px;
+      }
+      
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(25, 118, 210, 0.7);
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <div style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #0a1929;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 40px;
+        z-index: 10000;
+      ">
+        <div style="margin-bottom: 30px;">
+          <div style="font-size: 4rem; margin-bottom: 20px;">🔒</div>
+          <h1 style="color: #1976d2; margin-bottom: 20px; font-size: 2.5rem;">JavaScript Required</h1>
+        </div>
+        <div style="max-width: 600px;">
+          <p style="font-size: 1.2rem; margin-bottom: 15px; line-height: 1.6;">
+            TOR Sentinel requires JavaScript to function properly. This is necessary for:
+          </p>
+          <ul style="text-align: left; margin-bottom: 25px; padding-left: 20px;">
+            <li style="margin-bottom: 10px;">Real-time network monitoring</li>
+            <li style="margin-bottom: 10px;">Advanced AI-powered analysis</li>
+            <li style="margin-bottom: 10px;">Secure authentication</li>
+            <li style="margin-bottom: 10px;">Interactive visualizations</li>
+          </ul>
+          <p style="color: #b0bec5; font-size: 1rem;">
+            Please enable JavaScript in your browser settings and refresh the page.
+          </p>
+          <div style="margin-top: 30px; padding: 20px; background: rgba(255, 255, 255, 0.05); border-radius: 10px;">
+            <p style="color: #90a4ae; font-size: 0.9rem; margin: 0;">
+              <strong>Note:</strong> This system is for authorized law enforcement personnel only.
+              All activities are logged and monitored in compliance with DPDP Act 2023.
+            </p>
+          </div>
+        </div>
+      </div>
+    </noscript>
+    
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+      <div class="loading-glow"></div>
+      <div class="loading-spinner"></div>
+      <h1>🔒 TOR Sentinel</h1>
+      <p class="subtitle">Tamil Nadu Police Cyber Crime Division</p>
+      <p class="subtitle">Advanced AI-Powered TOR Network Analysis System</p>
+      <div class="loading-progress">
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+      <p class="version">Version 2.0.0 | Loading Application...</p>
+    </div>
+    
+    <div id="root"></div>
+    
+    <!-- React Dependencies -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <!-- D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    
+    <!-- Three.js -->
+    <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+    
+    <!-- Main Application Script -->
+    <script>
+      // Hide loading screen when React app loads
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          const loadingScreen = document.getElementById('loading-screen');
+          if (loadingScreen) {
+            loadingScreen.style.opacity = '0';
+            setTimeout(function() {
+              loadingScreen.style.display = 'none';
+            }, 500);
+          }
+        }, 1500);
+      });
+      
+      // Security: Prevent right-click in production
+      if (window.location.hostname !== 'localhost') {
+        document.addEventListener('contextmenu', function(e) {
+          e.preventDefault();
+        });
+        
+        // Prevent keyboard shortcuts for dev tools
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'F12' || 
+              (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+              (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+              (e.ctrlKey && e.key === 'U')) {
+            e.preventDefault();
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
